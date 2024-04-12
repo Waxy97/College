@@ -1,0 +1,53 @@
+#D20128958 L. Keating
+#Quick Sort Python Implementation.
+
+# QuickSort is an algorithm that sorts an array by choosing a pivot element
+# and sorting the array based on wether the data is larger, or smaller than the pivot.
+# This is then repated using the quicksort function seen beklow.
+import time
+
+start_time = time.time()
+
+# partition is an important process. It puts the elements in the correct positions
+# in relation to the array and the pivot.
+def partition(arr, low, high):
+    i = (low-1)  # i is our index, and it's telling us the index of the smaller element
+    pivot = arr[high] # Here we get our pivot, and the index of which it is at
+    
+    for j in range(low, high):
+      
+      # Here, if the element J is less than OR equal to the pivot, then it will
+      # put the smaller element to the left side of the array
+      
+        if arr[j] <= pivot:
+        
+          i = i+1 #this is how we get the smaller element to the left of the pivot
+          arr[i], arr[j] = arr[j], arr[i]
+        
+    arr[i+1], arr[high] = arr[high], arr[i+1]
+    return (i+1)
+  #Sorts partitions    
+def quickSort(arr, low, high): #arr is the array or list that we are sortinh
+    if len(arr) == 1:
+         return arr
+    if low < high: #low and high are the starting position and end position of the array
+            
+            #These elements partition and then sort elements in relation to the partition.
+          pi = partition(arr, low, high)
+              
+          quickSort(arr, low, pi-1)
+          quickSort(arr, pi+1, high)
+              
+              #This is our Driver code that tests the algorithm. 
+              #We enter numbers into the array and have them sent up to be partitioned and sorted
+arr = [1, 7, 21, 75, 11, 4, 2, 1, 3]
+n = len(arr)
+quickSort(arr, 0, n-1)
+print("The Sorted Array is")
+for i in range(n):
+  print("%d" % arr[i]),
+  
+  
+
+
+print("\n Time to execute: %s seconds " % (time.time() - start_time))
