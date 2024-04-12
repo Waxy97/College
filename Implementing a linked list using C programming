@@ -1,0 +1,184 @@
+#include <stdio.h>
+#include <stdlib.h>
+// Declaring the operations of my menu
+void displayList(); // Displays the linked list
+void insertFirst(); // Inserts a name to the front of the list
+void insertLast();  // Inserts a name to the end of the list
+void removeFirst(); // Removes the first name from the list
+void removeLast();  // Removes the last name from the list
+
+// creation of structure that holds our data, in our case a string.
+struct node {
+  char friendName[20]; // declaring char value with max of 20 characters
+  struct node *next;   // declaring pointer to the next node
+};
+// Menu driven main function that takes input from the user.
+struct node *first = NULL;
+int main() {
+  int menu;
+  while (1) {
+    printf("\n----------LINKED LIST FRIENDS MENU V1.0----------\n");
+    printf("\n PLEASE SELECT ONE OF THE FOLLOWING: \n");
+    printf("\n 1. Display the list of your friends! \n");
+    printf("\n 2. Insert a friends name to the front of the list. \n");
+    printf("\n 3. Insert a friends name to the end of the list. \n");
+    printf("\n 4. Delete a friends name from the front of the list. \n");
+    printf("\n 5. Delete a friends name from the end of the list. \n");
+    printf("\n 6. Exit menu. \n");
+    printf("\n");
+    scanf("%d", &menu);
+    switch (menu) // Using a switch statement to take the input from the user
+                  // and perform the selected operation
+    {
+    case 1:
+      displayList();
+      break;
+
+    case 2:
+      insertFirst();
+      break;
+
+    case 3:
+      insertLast();
+      break;
+
+    case 4:
+      removeFirst();
+      break;
+
+    case 5:
+      removeLast();
+      break;
+
+    case 6:
+      printf("Thankyou! Goodbye. \n");
+      exit(0);
+      break;
+
+    default:
+      printf(
+          "\n Invalid choice, please choose a valid option from the menu. \n");
+      break;
+    }
+  }
+  return 0;
+}
+
+void displayList() {
+  struct node *ptr;
+  if (first == NULL) // checking if our list is empty.
+  {
+    printf("\n Sorry, you have no friends :( \n");
+    return;
+  } else {
+    ptr = first; // pointer is assigned to the first value
+    printf("\n Your friends are: \n");
+    while (ptr != NULL) // while the list is not empty
+    {
+      printf("%s \n", ptr->friendName); // pointer prints names and loops until
+                                        // it returns NULL.
+      ptr = ptr->next; // ptr traversing the list
+    }
+  }
+}
+
+void insertFirst() {
+  struct node *tempNode; // declaring temp ptr and allocating memory so it
+                         // behaves as an object of type node.
+  tempNode = (struct node *)malloc(
+      sizeof(struct node)); // allocating memory to the temp ptr with the size
+                            // of a struct node
+  if (tempNode == NULL) // if theres no more space, an error will appear.
+  {
+    printf("\n Error! Out of memory! \n");
+    return;
+  }
+  printf("\n Enter your friends name: \n");
+  scanf("%s", tempNode->friendName); // scans for a string input, takes input
+                                     // into our temp ptr which is then assigned
+                                     // to our data set titled "friendName"
+  tempNode->next = NULL; // signifies end of list
+  if (first == NULL)     // if our first ptr is empty
+  {
+    first = tempNode; // we assign it to temp so we can add data to the front.
+  } else {
+    tempNode->next =
+        first; // we link the temp with the first ptr, signalling that the
+               // element after temp is "first" in the list.
+    first =
+        tempNode; // first ptr assigned to temp, temp is now the first element
+                  // in the list, allowing us to add data to the front.
+  }
+}
+
+void insertLast() {
+  struct node *tempNode, *ptr;
+  tempNode = (struct node *)malloc(
+      sizeof(struct node)); // Like above, we allocate memory to out temp ptr
+  if (tempNode == NULL) {
+    printf("\n Error! Out of memory! \n");
+    return;
+  }
+  printf("\n Enter your friends name: \n");
+  scanf("%s", tempNode->friendName); // checking to see if the list is empty
+  tempNode->next = NULL;
+  if (first == NULL) {
+    first = tempNode; // if its empty then we assign the element in out temp ptr
+                      // to the front of the list, or in this case the only
+                      // element in the list.
+  } else // otherwise
+  {
+    ptr = first; // we assign the ptr to the first value and
+    while (ptr->next !=
+           NULL) // we keep checking the list until next ptr is empty
+    {
+      ptr = ptr->next; // if its empty we assign ptr to next
+    }
+    ptr->next = tempNode; // element stored in temp ptr is assigned to the end
+                          // of the list
+  }
+}
+
+void removeFirst() {
+  struct node *ptr, *friendName;
+  if (friendName == NULL) // checking if theres any elements in the list
+  {
+    printf("\n No friends to remove! \n");
+    return;
+  } else {
+    ptr = first;         // assigns the ptr to the first value
+    first = first->next; // and then moves first pointer to the next element in
+                         // the list
+    printf("\n The friend you removed was: %s \n", ptr->friendName);
+    free(ptr); // it then removes the element inside the ptr
+  }
+}
+
+void removeLast() {
+  struct node *ptr, *tempNode;
+  if (tempNode == NULL) // checking if the list is empty again
+  {
+    printf("\n No friends to remove! \n");
+    exit(0);
+  } else if (first->next == NULL) // if theres only one element in the list,
+  {
+    ptr = first;  // ptr is assigned to the first value
+    first = NULL; // first node not contains no value
+    printf("\n The friend you removed was: %s \n", ptr->friendName);
+    free(ptr); // deletes the element in the ptr
+  } else {
+    ptr = first; // ptr assigned to first value
+    while (ptr->next !=
+           NULL) // while the next ptr is not empty, we traverse the list
+    {
+      tempNode = ptr; // ptr assigned to temp to hold the elements as the ptr
+                      // traverses the list
+      ptr = ptr->next;
+    }
+    tempNode->next =
+        NULL; // once it reaches the end of the list, the next value is empty
+    printf("\n The friend you removed was: %s \n", ptr->friendName);
+    free(ptr); // element located inside the ptr is removed, thus removing the
+               // last element.
+  }
+}
