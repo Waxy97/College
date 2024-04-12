@@ -1,0 +1,206 @@
+# Prog & Algorithms 1 CMPU1026 2021-2022 Assignment 1
+# Built using Python 3.7
+
+
+from collections import Counter
+
+import matplotlib
+import numpy as np
+import pandas as pd
+from sklearn import preprocessing
+
+# Formatting output screen to give a better view of data
+desired_width = 320
+pd.set_option('display.width', desired_width)
+np.set_printoptions(linewidth=desired_width)
+pd.set_option('display.max_columns', 12)
+
+# Reading in our data and declaring missing values that should be cleaned
+df = pd.read_csv('http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data', engine='python',
+                 header=None, na_values=['?', '??', ' ?'], index_col=False)
+
+DATA_URL: str = ('http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data')
+
+# Renaming and simplifying our data columns
+df.rename(columns={0: 'Age', 1: 'Workclass', 2: 'fnlwgt', 3: 'Education', 4: 'Education_Number', 5: 'Martial_Status',
+                   6: 'Occupation', 7: 'Relationship', 8: 'Race', 9: 'Sex', 10: 'Capital_Gain', 11: 'Capital_Loss',
+                   12: 'Hours_Per_Week', 13: 'Native_Country', 14: 'Income'}, inplace=True)
+df.to_csv('test_with_col.csv', index=False)
+
+# Cleaning and removing missing values and columns of data that are not needed
+df = df.drop(['fnlwgt', 'Education', 'Native_Country'], axis=1)
+
+col_names = df.columns
+
+# Replacing missing values with the most often occurring value as it would be most optimal with this dataset
+for c in col_names:
+    df = df.replace("?", np.NaN)
+df = df.apply(lambda x: x.fillna(x.value_counts().index[0]))
+
+# Simplifying certain categories and reducing them to a smaller amount of options
+df['Martial_Status'].replace(
+    to_replace=['Divorced', 'Never-married', 'Separated', 'Widowed'],
+    value='Not Married',
+    inplace=True,
+    limit=None,
+    regex=True,
+    method='pad')
+
+df['Martial_Status'].replace(
+    to_replace=['Married-AF-spouse', 'Married-civ-spouse', 'Married-spouse-absent'],
+    value='Married',
+    inplace=True,
+    limit=None,
+    regex=True,
+    method='pad')
+
+# Summarises the shape of the data
+print(df.shape)
+
+# Finding out how much of the data is either above or below the 50k mark.
+target = df.values[:, -1]
+counter = Counter(target)
+for k, v in counter.items():
+    per = v / len(target) * 100
+    print('Class=%s, Count=%d, Percentage=%.3f%%' % (k, v, per))
+
+print("\n")
+
+print(df.head())
+
+# Using a mapping dictionary and label encoder to sort the categorical date into numerical data, so it can be
+# processed in the learning algorithm
+category_col = ['Age', 'Workclass', 'Education_Number', 'Martial_Status',
+                'Occupation', 'Relationship', 'Race', 'Sex', 'Capital_Gain', 'Capital_Loss',
+                'Hours_Per_Week', 'Income']
+labelEncoder = preprocessing.LabelEncoder()
+
+mapping_dict = {}
+for col in category_col:
+    df[col] = labelEncoder.fit_transform(df[col])
+
+    le_name_mapping = dict(zip(labelEncoder.classes_, labelEncoder.transform(labelEncoder.classes_)))
+
+    mapping_dict[col] = le_name_mapping
+print(mapping_dict)
+
+from sklearn.model_selection import train_test_split
+
+train, test = train_test_split(df, test_size=.25)
+
+print("\n")
+print("Train")
+print(train.head())
+print("\n")
+print("Test")
+print(test.head())
+
+# Getting values from each category and sorting them by most freq to the least frequent
+# Age
+total_above = [0] * 11
+total_below = [0] * 11
+# Work Class
+total_above[1] = [0] * 8
+total_below[1] = [0] * 8
+# Education Number
+total_above[2] = [0] * 8
+total_below[2] = [0] * 8
+# Marital Status
+total_above[3] = [0] * 7
+total_below[3] = [0] * 7
+# Occupation
+total_above[4] = [0] * 14
+total_below[4] = [0] * 14
+# Relationship
+total_above[5] = [0] * 6
+total_below[5] = [0] * 6
+# Race
+total_above[6] = [0] * 5
+total_below[6] = [0] * 5
+# Gender
+total_above[7] = [0] * 2
+total_below[7] = [0] * 2
+# Capital Gain
+total_above[8] = [0] * 2
+total_below[8] = [0] * 2
+# Capital Loss
+total_above[9] = [0] * 2
+total_below[9] = [0] * 2
+# Hours Per Week
+total_above[10] = [0] * 2
+total_below[10] = [0] * 2
+
+is_above = False
+
+# Printing totals, from most freq to least
+for c in df.columns:
+    print("---- %s ---" % c)
+    print(df[c].value_counts())
+
+X = df.drop('Income', axis=1)
+
+y = df['Income']
+
+print("\n")
+
+print(X.head(3))
+
+print("\n")
+
+print(y.head(3))
+
+print("\n")
+
+# Size of data set split used for testing
+split_size = 0.3
+
+# Splitting data into train and test datasets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=split_size, random_state=22)
+
+# Train and Validation set
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.20, random_state=5)
+
+# Printing the shape and showing us the amount of data within each dataset
+print('Train Dataset: {0}{1}'.format(X_train.shape, y_train.shape))
+print('Validation Dataset: {0}{1}'.format(X_val.shape, y_val.shape))
+print('Test Dataset: {0}{1}'.format(X_test.shape, y_test.shape))
+
+# Importing and using the DecisionTree algorithm. It is a supervised learning algorithm and works well with
+# categorical data hence why we are using it for our datasets. The Decision Tree finds the best attribute and places
+# it at the root node of the tree It will then split the training set into subsets while making sure each subset has
+# the same value for an attribute. Leaf nodes are found by repeating the first two steps
+from sklearn.tree import DecisionTreeClassifier
+
+model = DecisionTreeClassifier()
+
+# Training the model with the training data sets and using a depth of 5 as it looks to be giving us the best accuracy
+dt_default = DecisionTreeClassifier(max_depth=5)
+dt_default.fit(X_train, y_train)
+
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+
+model.fit(X_train, y_train)
+prediction = model.predict(X_test)
+
+# Printing the accuracy, confusion matrix and classification matrix of our model The Confusion matrix is a table that
+# describes the performance of our classifier Our Classification matrix categorises our results. Precision showing
+# the ratio of true positives  to all the positives predicted The lower the precision, the more false positives
+# present. Recall is the ratio of true positives to all our positives in the dataset itself F1 score is the
+# combination of these scores. Support is the number of actual occurrences of the class, in our case below (0) or
+# above (1) 50k in the predicted dataset
+#
+
+print('-' * 40)
+print('Accuracy Score')
+print(accuracy_score(y_test, prediction))
+print('-' * 40)
+print('Confusion Matrix')
+print(confusion_matrix(y_test, prediction))
+print('-' * 40)
+print('Classification Matrix')
+print(classification_report(y_test, prediction))
+
+# With an accuracy score of .94%, I'm happy with the result but believe the result could be increased with finer
+# tweaking, or perhaps a different algorithm like random forest for example
